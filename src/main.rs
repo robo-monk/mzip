@@ -36,6 +36,9 @@ impl Node<(u32, char)> {
         }
     }
 
+    pub fn value(&self) -> char {
+        return self.v.1
+    }
     pub fn frequency(&self) -> u32 {
         return self.v.0;
     }
@@ -66,26 +69,42 @@ impl Node<(u32, char)> {
 
 */
 
+fn queue_to_tree(map: HashMap<char, u32>) -> Tree<(u32, char)> {
+
+    let mut queue: Vec<(u32, Node<(u32, char)>)> = Vec::new();
+
+    for (c, frequency) in map.iter() {
+        println!("char: {c} freq: {frequency}");
+        let node = Node::new((*frequency, *c));
+        queue.push((*frequency, node));
+    }
+
+    queue.sort_by(|a, b| a.0.cmp(&b.0));
+
+    for t in queue.iter() {
+        println!("[({}) '{}']", t.1.frequency(), t.1.value());
+    }
+    return Tree::new();
+}
+
 fn encode(content: String) -> String {
     let chars = content.chars();
 
-    let mut queue: HashMap<char, u32> = HashMap::new();
+    let mut map: HashMap<char, u32> = HashMap::new();
 
     for c in chars {
         println!("{}", c);
         let mut frequency = 0;
 
-        if queue.contains_key(&c) {
-            frequency = *queue.get(&c).unwrap();
+        if map.contains_key(&c) {
+            frequency = *map.get(&c).unwrap();
         }
 
-        queue.insert(c, frequency + 1);
+        map.insert(c, frequency + 1);
         // Node::new((frequency, c));
     }
 
-    for (key, val) in queue.iter() {
-        println!("key: {key} val: {val}");
-    }
+    let tree = queue_to_tree(map);
 
     return String::from("");
 }

@@ -48,12 +48,15 @@ impl Node<(u32, char)> {
     }
 
     fn serialize_debug(&self) {
-        if self.is_leaf() {
-            println!("[{} '{}']", self.v.0, self.v.1);
-        } else {
-            self.right.as_ref().unwrap().serialize_debug();
+        println!("<node data=\"[{}, '{}']\">", self.v.0, self.v.1);
+        if !self.is_leaf() {
             self.left.as_ref().unwrap().serialize_debug();
+            // print!("  ]        [ ");
+            self.right.as_ref().unwrap().serialize_debug();
+            // print!("] \n");
         }
+
+        print!("<node/>");
     }
 
     pub fn value(&self) -> char {

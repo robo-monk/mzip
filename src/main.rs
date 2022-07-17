@@ -7,7 +7,10 @@ use std::collections::HashMap;
 fn main() {
     println!("Hello, world!");
     let compressed = encode(String::from("yooo what the fuck"));
-    println!("{}", compressed);
+    println!("compressed: {}", compressed);
+
+    let text = decode(compressed);
+    println!("text: {}", text);
 }
 
 pub struct Tree<T> {
@@ -24,13 +27,20 @@ impl From<Node<(u32, char)>> for Option<Box<Node<(u32, char)>>> {
     fn from(node: Node<(u32, char)>) -> Self {
         Some(Box::new(node))
     }
-
-    
 }
 
 impl Tree<(u32, char)> {
     fn new(root: Node<(u32, char)>) -> Self {
         Tree { root: root.into() }
+    }
+
+    pub fn serialize(&mut self) -> String {
+        return self.root.as_ref().unwrap().serialize();
+    }
+
+    pub fn from_serialization(serialization: String) -> Self {
+        let root = Node::from_serialization(serialization).into();
+        Tree { root }
     }
 }
 
@@ -41,6 +51,10 @@ impl Node<(u32, char)> {
             right: None,
             left: None,
         }
+    }
+
+    fn from_serialization(serialization: String) -> Self {
+        Node { v: (), right: (), left: () }
     }
 
     pub fn is_leaf(&self) -> bool {
@@ -62,8 +76,24 @@ impl Node<(u32, char)> {
     pub fn value(&self) -> char {
         return self.v.1;
     }
+
     pub fn frequency(&self) -> u32 {
         return self.v.0;
+    }
+
+    pub fn serialize(&self) -> String {
+        if self.is_leaf() {
+            return format!("[{},{}]", self.value(), self.frequency());
+            // print!("] \n");
+        }
+
+        return format!(
+            "[{},{},{},{}]",
+            self.value(),
+            self.frequency(),
+            self.left.as_ref().unwrap().serialize(),
+            self.right.as_ref().unwrap().serialize()
+        );
     }
 }
 
@@ -102,12 +132,12 @@ fn queue_to_tree(mut queue: Vec<Node<(u32, char)>>) -> Tree<(u32, char)> {
 
     let left = queue.pop().unwrap();
     let right = queue.pop().unwrap();
-    let combined_frequency =  left.frequency() + right.frequency();
+    let combined_frequency = left.frequency() + right.frequency();
     let new_node: Node<(u32, char)> = Node {
         v: (combined_frequency, char::from(1)), // refactor so char could be none
         right: right.into(),
-        left: left.into()
-     };
+        left: left.into(),
+    };
 
     queue.push(new_node);
 
@@ -145,9 +175,15 @@ fn encode(content: String) -> String {
     }
 
     let queue = map_to_queue(map);
-    let tree = queue_to_tree(queue);
+    let mut tree = queue_to_tree(queue);
 
-    tree.root.unwrap().serialize_debug();
+    // tree.root.unwrap().serialize_debug();
 
-    return String::from("");
+    let serializiation = tree.serialize();
+    return serializiation.to_string();
+    // return String::from("");
+}
+
+fn decode(serialization: String) -> String {
+
 }

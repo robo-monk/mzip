@@ -7,6 +7,7 @@ use std::collections::HashMap;
 fn main() {
     println!("Hello, world!");
     let compressed = encode(String::from("yooo what the fuck"));
+    // let compressed = encode(String::from("[,18,[,8,[,4,[t,2],[h,2]],[,4,[,2,[y,1],[a,1]],[,2,[u,1],[e,1]]]],[,10,[,4,[,2,[c,1],[f,1]],[,2,[w,1],[k,1]]],[,6,[ ,3],[o,3]]]]"));
     println!("compressed: {}", compressed);
 
     let text = decode(compressed);
@@ -54,7 +55,8 @@ impl Node<(u32, char)> {
     }
 
     fn from_serialization(serialization: String) -> Self {
-        Node { v: (), right: (), left: () }
+        Node { v: (1, char::from(1)), right: None, left: None }
+        // Node { v: (), right: (), left: () }
     }
 
     pub fn is_leaf(&self) -> bool {
@@ -82,14 +84,15 @@ impl Node<(u32, char)> {
     }
 
     pub fn serialize(&self) -> String {
+        let serialized_value = self.value().to_digit(10).unwrap_or(0);
         if self.is_leaf() {
-            return format!("[{},{}]", self.value(), self.frequency());
+            return format!("[{},{}]", serialized_value, self.frequency());
             // print!("] \n");
         }
 
         return format!(
             "[{},{},{},{}]",
-            self.value(),
+            serialized_value,
             self.frequency(),
             self.left.as_ref().unwrap().serialize(),
             self.right.as_ref().unwrap().serialize()
@@ -181,9 +184,57 @@ fn encode(content: String) -> String {
 
     let serializiation = tree.serialize();
     return serializiation.to_string();
-    // return String::from("");
 }
 
 fn decode(serialization: String) -> String {
 
+    let chars = serialization.chars();
+
+    let mut map: HashMap<char, u32> = HashMap::new();
+
+    let mut bracket_counter: i32 = -1;
+    let mut starter_bracket_index: i32 = -1;
+
+    let mut buffer: Vec<char> = Vec::new();
+
+    for (i, c)  in chars.enumerate() {
+
+        buffer.push(c);
+        if c == '[' {
+            bracket_counter += 1;
+            if bracket_counter == 0 {
+                starter_bracket_index = i as i32;
+                bracket_counter = 0;
+            }
+        }
+
+        if c == ']' {
+            println!("] {}", bracket_counter);
+            bracket_counter -= 1;
+            if bracket_counter == -1 {
+                buffer = buffer.drain(1..(buffer.len()-1)).collect(); // remove first [
+
+                let s = String::from_iter(&buffer);
+                // let serialization = decode((&s).to_string());
+                println!("close {}", s);
+                // println!("close2 {}", serialization);
+
+                bracket_counter = -1;
+                buffer.clear()
+                    // let s: String = v.into_iter().collect();
+            }
+        }
+
+
+        // println!("{}", c);
+        // let mut frequency = 0;
+
+        // if map.contains_key(&c) {
+        //     frequency = *map.get(&c).unwrap();
+        // }
+
+        // map.insert(c, frequency + 1);
+        // Node::new((frequency, c));
+    }
+    return String::from("");
 }
